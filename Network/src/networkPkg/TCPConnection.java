@@ -1,8 +1,11 @@
 package networkPkg;
 
+
+import userListPkg.UserList;
+
 import java.io.*;
 import java.net.Socket;
-import java.util.Date;
+import java.util.List;
 
 public class TCPConnection {
     private final Socket socket;
@@ -10,12 +13,15 @@ public class TCPConnection {
     private final TCPConnectionListener eventListener;
     private final BufferedReader in;
     private final BufferedWriter out;
+    public String name;
 
-    public TCPConnection(TCPConnectionListener tcpConnectionListener, String address, int port) throws IOException {
-        this(tcpConnectionListener, new Socket(address, port));
+    public TCPConnection(TCPConnectionListener tcpConnectionListener, String name, String address, int port) throws IOException {
+        this(tcpConnectionListener, name, new Socket(address, port));
     }
 
-    public TCPConnection(TCPConnectionListener tcpConnectionListener, Socket socket) throws IOException {
+    public TCPConnection(TCPConnectionListener tcpConnectionListener, String name, Socket socket) throws IOException {
+        this.name = name;
+        UserList.addUser(name.isEmpty() ? "User" : name);
         this.eventListener = tcpConnectionListener;
         this.socket = socket;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
@@ -24,24 +30,24 @@ public class TCPConnection {
             @Override
             public void run() {
                 try {
-                    eventListener.onConnectionReady(TCPConnection.this); // передали экземпляр обромляющего класса
+                    eventListener.onConnectionReady(TCPConnection.this, name); // передали экземпляр обромляющего класса
                     while (!incomingThread.isInterrupted()) {
                         String message = in.readLine();
-                        eventListener.onReceiveString(TCPConnection.this, message);
+                        eventListener.onReceiveString(TCPConnection.this, name, message);
                     }
                 } catch (IOException e) {
                     eventListener.onException(TCPConnection.this, e);
                 } finally {
-                    eventListener.onDisconnect(TCPConnection.this);
+                    eventListener.onDisconnect(TCPConnection.this, name);
                 }
             }
         });
         this.incomingThread.start();
     }
 
-    public synchronized void sendString(String string) {
+    public synchronized void sendString(String name, String string) {
         try {
-            this.out.write(string + "\r\n");
+            this.out.write((name.isEmpty() ? "User" : name) + string + "\r\n");
             this.out.flush();
         } catch (IOException e) {
             this.eventListener.onException(TCPConnection.this, e);

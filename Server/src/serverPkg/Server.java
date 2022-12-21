@@ -2,10 +2,12 @@ package serverPkg;
 
 import networkPkg.TCPConnection;
 import networkPkg.TCPConnectionListener;
+import networkSettingsPkg.ServerSettings;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Server implements TCPConnectionListener {
@@ -14,12 +16,13 @@ public class Server implements TCPConnectionListener {
     }
 
     private final List<TCPConnection> connectionList = new ArrayList<>();
+
     private Server() {
         System.out.println("Сервер запущен...");
-        try (ServerSocket serverSocket = new ServerSocket(8189)) {
+        try (var serverSocket = new ServerSocket(ServerSettings.PORT)) {
             while (true) {
                 try {
-                    new TCPConnection(this, serverSocket.accept());// объект socket при входящем соединении
+                    new TCPConnection(this, "Server_By_Mark_M", serverSocket.accept());
                 } catch (IOException e) {
                     System.out.println("TCPConnection exception: " + e);
                 }
@@ -29,21 +32,23 @@ public class Server implements TCPConnectionListener {
         }
     }
 
+    // TODO чтобы выводило имя пользователя а не сервера!
     @Override
-    public synchronized void onConnectionReady(TCPConnection tcpConnection) {
+    public synchronized void onConnectionReady(TCPConnection tcpConnection, String name) {
         connectionList.add(tcpConnection);
-        sendToAll("Клиент подключился: " + tcpConnection);
+        sendToAll(name, "Клиент " + tcpConnection + " подключился.");
     }
 
     @Override
-    public synchronized void onReceiveString(TCPConnection tcpConnection, String string) {
-        sendToAll(string);
+    public synchronized void onReceiveString(TCPConnection tcpConnection, String name, String string) {
+        sendToAll(name, string);
     }
 
+    // TODO чтобы выводило имя пользователя а не сервера!
     @Override
-    public synchronized void onDisconnect(TCPConnection tcpConnection) {
+    public synchronized void onDisconnect(TCPConnection tcpConnection, String name) {
         connectionList.remove(tcpConnection);
-        sendToAll("Клиент отключился: " + tcpConnection);
+        sendToAll(name, "Клиент " + tcpConnection + " отключился.");
     }
 
     @Override
@@ -51,10 +56,10 @@ public class Server implements TCPConnectionListener {
         System.out.println("TCPConnection exception: " + e);
     }
 
-    private void sendToAll(String string) {
-        System.out.println(string);
+    private void sendToAll(String name, String string) {
+        System.out.println("\n"+ "[" + new Date() + "] " + name + " : " + string);
         for(var user : connectionList)
-            user.sendString(string);
+            user.sendString(name +"\n"+ "[" + new Date() + "] ", string);
     }
 }
 

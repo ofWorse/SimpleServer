@@ -2,6 +2,6 @@ package clientPkg;
 
 public class Client {
     public static void main(String[] args) {
-        new ClientSession("Марк").connect();
+        new ClientSession().connect();
     }
 }

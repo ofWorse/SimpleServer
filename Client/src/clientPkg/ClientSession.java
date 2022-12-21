@@ -4,23 +4,19 @@ import networkPkg.TCPConnection;
 import networkPkg.TCPConnectionListener;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Scanner;
 
-public class ClientSession implements TCPConnectionListener {
-    private static final String IP_ADR = "192.168.1.83";
-    private static final int PORT = 8189;
-    private final String name;
+import static networkSettingsPkg.ServerSettings.IP_ADR;
+import static networkSettingsPkg.ServerSettings.PORT;
 
-    public ClientSession(String name) {
-        this.name = name;
-    }
+public class ClientSession implements TCPConnectionListener {
 
     private TCPConnection connection;
+    private String name;
 
     public void connect() {
         try {
-            this.connection = new TCPConnection(this, IP_ADR, PORT);
+            tryToRegister();
             while (true) {
                 sendMSG();
             }
@@ -29,30 +25,37 @@ public class ClientSession implements TCPConnectionListener {
         }
     }
 
+    private void tryToRegister() throws IOException {
+        log("Ввведите имя пользователя: ");
+        this.name = new Scanner(System.in).nextLine();
+        this.connection = new TCPConnection(this, name, IP_ADR, PORT);
+    }
+
     public void sendMSG() {
         String msg = new Scanner(System.in).nextLine();
         if(msg.equals("")) return;
-        connection.sendString("[" + new Date() + "] " + name + ": " + msg);
+        connection.sendString((name.isEmpty() ? "User" : name) + ": ", msg);
     }
 
     @Override
-    public void onConnectionReady(TCPConnection tcpConnection) {
-        log("Соединение готово...");
+    public void onConnectionReady(TCPConnection tcpConnection, String name) {
+        log("\nСоединение готово...");
     }
 
     @Override
-    public void onReceiveString(TCPConnection tcpConnection, String string) {
+    public void onReceiveString(TCPConnection tcpConnection, String name, String string) {
         log(string);
     }
 
+
     @Override
-    public void onDisconnect(TCPConnection tcpConnection) {
+    public void onDisconnect(TCPConnection tcpConnection, String name) {
         log("Соединение прервано.");
     }
 
     @Override
     public void onException(TCPConnection tcpConnection, Exception e) {
-        System.out.println("TCPConnection exception: " + e);
+        log("TCPConnection exception: " + e);
     }
 
     private synchronized void log(String message) {
