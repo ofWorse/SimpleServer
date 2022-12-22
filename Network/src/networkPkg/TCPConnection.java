@@ -1,11 +1,12 @@
 package networkPkg;
 
-
-import userListPkg.UserList;
+import namesPkg.NamesHolder;
+import serializePkg.ReadObject;
+import serializePkg.WriteObject;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 public class TCPConnection {
     private final Socket socket;
@@ -21,11 +22,10 @@ public class TCPConnection {
 
     public TCPConnection(TCPConnectionListener tcpConnectionListener, String name, Socket socket) throws IOException {
         this.name = name;
-        UserList.addUser(name.isEmpty() ? "User" : name);
         this.eventListener = tcpConnectionListener;
         this.socket = socket;
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-        this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         this.incomingThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -38,7 +38,11 @@ public class TCPConnection {
                 } catch (IOException e) {
                     eventListener.onException(TCPConnection.this, e);
                 } finally {
-                    eventListener.onDisconnect(TCPConnection.this, name);
+                    try {
+                        eventListener.onDisconnect(TCPConnection.this, name);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         });
@@ -47,7 +51,8 @@ public class TCPConnection {
 
     public synchronized void sendString(String name, String string) {
         try {
-            this.out.write((name.isEmpty() ? "User" : name) + string + "\r\n");
+            new WriteObject((name.isEmpty() ? "User" : name) + string + "\r\n");
+            this.out.write(new ReadObject().readOb());
             this.out.flush();
         } catch (IOException e) {
             this.eventListener.onException(TCPConnection.this, e);
@@ -68,5 +73,4 @@ public class TCPConnection {
     public String toString() {
         return "TCPConnection: " + socket.getInetAddress() + ": " + socket.getPort();
     }
-
 }

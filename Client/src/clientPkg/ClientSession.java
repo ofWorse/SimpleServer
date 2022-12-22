@@ -1,7 +1,9 @@
 package clientPkg;
 
+import namesPkg.NamesHolder;
 import networkPkg.TCPConnection;
 import networkPkg.TCPConnectionListener;
+
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -21,44 +23,49 @@ public class ClientSession implements TCPConnectionListener {
                 sendMSG();
             }
         } catch (IOException e) {
-            log("TCPConnection exception: " + e);
+            logLn("TCPConnection exception: " + e);
         }
     }
 
     private void tryToRegister() throws IOException {
-        log("Ввведите имя пользователя: ");
-        this.name = new Scanner(System.in).nextLine();
+        var a = false;
+        while(!a) {
+            logLn("Ввведите имя пользователя: ");
+            this.name = new Scanner(System.in).nextLine();
+            if(NamesHolder.addUser(name)) a = true;
+            else logLn("Такое имя уже существует, или вы ввели запрещенное имя.");
+        }
         this.connection = new TCPConnection(this, name, IP_ADR, PORT);
     }
 
-    public void sendMSG() {
+    public void sendMSG() throws IOException {
         String msg = new Scanner(System.in).nextLine();
-        if(msg.equals("")) return;
-        connection.sendString((name.isEmpty() ? "User" : name) + ": ", msg);
+        if (msg.equals("")) return;
+        connection.sendString(name + ": ", msg);
     }
 
     @Override
     public void onConnectionReady(TCPConnection tcpConnection, String name) {
-        log("\nСоединение готово...");
+        logLn("\nСоединение готово...");
     }
 
     @Override
     public void onReceiveString(TCPConnection tcpConnection, String name, String string) {
-        log(string);
+        logLn(string);
     }
 
 
     @Override
     public void onDisconnect(TCPConnection tcpConnection, String name) {
-        log("Соединение прервано.");
+        logLn("Соединение прервано.");
     }
 
     @Override
     public void onException(TCPConnection tcpConnection, Exception e) {
-        log("TCPConnection exception: " + e);
+        logLn("TCPConnection exception: " + e);
     }
 
-    private synchronized void log(String message) {
+    private synchronized void logLn(String message) {
         System.out.println(message);
     }
 }

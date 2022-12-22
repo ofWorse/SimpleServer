@@ -6,7 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/MyServer.iml" filepath="$PROJECT_DIR$/MyServer.iml" />
       <module fileurl="file://$PROJECT_DIR$/Network/Network.iml" filepath="$PROJECT_DIR$/Network/Network.iml" />
       <module fileurl="file://$PROJECT_DIR$/Server/Server.iml" filepath="$PROJECT_DIR$/Server/Server.iml" />
-      <module fileurl="file://$PROJECT_DIR$/UserHandlerModule/UserHandler.iml" filepath="$PROJECT_DIR$/UserHandlerModule/UserHandler.iml" />
     </modules>
   </component>
 </project>
