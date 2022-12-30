@@ -1,6 +1,5 @@
 package networkPkg;
 
-import namesPkg.NamesHolder;
 import serializePkg.ReadObject;
 import serializePkg.WriteObject;
 
@@ -11,16 +10,16 @@ import java.nio.charset.StandardCharsets;
 public class TCPConnection {
     private final Socket socket;
     private final Thread incomingThread;
-    private final TCPConnectionListener eventListener;
+    private final TCPConnectionObserver eventListener;
     private final BufferedReader in;
     private final BufferedWriter out;
     public String name;
 
-    public TCPConnection(TCPConnectionListener tcpConnectionListener, String name, String address, int port) throws IOException {
+    public TCPConnection(TCPConnectionObserver tcpConnectionListener, String name, String address, int port) throws IOException {
         this(tcpConnectionListener, name, new Socket(address, port));
     }
 
-    public TCPConnection(TCPConnectionListener tcpConnectionListener, String name, Socket socket) throws IOException {
+    public TCPConnection(TCPConnectionObserver tcpConnectionListener, String name, Socket socket) throws IOException {
         this.name = name;
         this.eventListener = tcpConnectionListener;
         this.socket = socket;
@@ -67,10 +66,5 @@ public class TCPConnection {
         } catch (IOException e) {
             this.eventListener.onException(TCPConnection.this, e);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "TCPConnection: " + socket.getInetAddress() + ": " + socket.getPort();
     }
 }

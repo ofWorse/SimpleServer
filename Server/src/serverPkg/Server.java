@@ -1,8 +1,7 @@
 package serverPkg;
 
-import namesPkg.NamesHolder;
 import networkPkg.TCPConnection;
-import networkPkg.TCPConnectionListener;
+import networkPkg.TCPConnectionObserver;
 import networkSettingsPkg.ServerSettings;
 import serializePkg.ReadObject;
 import serializePkg.WriteObject;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Server implements TCPConnectionListener {
+public class Server implements TCPConnectionObserver {
     public static void main(String[] args) {
         new Server();
     }
@@ -57,7 +56,7 @@ public class Server implements TCPConnectionListener {
         System.out.println("TCPConnection exception: " + e);
     }
 
-    private void sendToAll(String name, String string) throws IOException {
+    private void sendToAll(String name, String string) {
         new WriteObject("\n"+ "[" + new Date() + "] " + name + " : " + string);
         System.out.println(new ReadObject().readOb());
         for(var user : connectionList)

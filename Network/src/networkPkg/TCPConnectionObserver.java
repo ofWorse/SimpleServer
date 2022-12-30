@@ -2,7 +2,7 @@ package networkPkg;
 
 import java.io.IOException;
 
-public interface TCPConnectionListener {
+public interface TCPConnectionObserver {
 
     void onConnectionReady(TCPConnection tcpConnection, String name) throws IOException;
     void onReceiveString(TCPConnection tcpConnection, String name, String string) throws IOException;

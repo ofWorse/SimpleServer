@@ -2,7 +2,7 @@ package clientPkg;
 
 import namesPkg.NamesHolder;
 import networkPkg.TCPConnection;
-import networkPkg.TCPConnectionListener;
+import networkPkg.TCPConnectionObserver;
 
 
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.util.Scanner;
 import static networkSettingsPkg.ServerSettings.IP_ADR;
 import static networkSettingsPkg.ServerSettings.PORT;
 
-public class ClientSession implements TCPConnectionListener {
+public class ClientSession implements TCPConnectionObserver {
 
     private TCPConnection connection;
     private String name;
